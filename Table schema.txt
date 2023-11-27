@@ -64,12 +64,13 @@ CREATE TABLE Assignment (
  
 CREATE TABLE Feedback (
     FeedbackID INT PRIMARY KEY IDENTITY(1,1),
-    AssignmentID
+    AssignmentID INT,
     CustomerID INT,
     AgentID INT,
     Rating INT check (Rating>0 and Rating<=5),
     FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    FOREIGN KEY (AgentID) REFERENCES ServiceAgent(AgentID)
+    FOREIGN KEY (AgentID) REFERENCES ServiceAgent(AgentID),
+    FOREIGN KEY (AssignmentID) REFERENCES Assignment (AssignmentID),
 );
 
 
