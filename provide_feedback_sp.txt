@@ -1,0 +1,40 @@
+create PROCEDURE ProvideFeedback
+    @CustomerPhone VARCHAR(15),
+    @Rating INT
+AS
+BEGIN
+    -- Declare variables
+    DECLARE @CustomerID INT;
+    DECLARE @AgentID INT;
+    DECLARE @AssignmentID INT;
+
+    -- Start a transaction
+    BEGIN TRANSACTION;
+
+    -- Get AssignmentID based on CustomerPhone
+    SELECT @AssignmentID = AssignmentID
+    FROM Assignment
+    WHERE CustomerID IN (SELECT CustomerID FROM Customer WHERE CustomerPhone = @CustomerPhone);
+
+    -- Check if the assignment exists
+    IF @AssignmentID IS NOT NULL
+    BEGIN
+        -- Get CustomerID and AgentID based on AssignmentID
+        SELECT @CustomerID = CustomerID, @AgentID = AgentID
+        FROM Assignment
+        WHERE AssignmentID = @AssignmentID;
+
+        -- Insert into Feedback table
+        INSERT INTO Feedback (CustomerID, AgentID, AssignmentID, Rating)
+        VALUES (@CustomerID, @AgentID, @AssignmentID, @Rating);
+
+        -- Commit the transaction
+        COMMIT;
+
+        PRINT 'Feedback successfully recorded.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Invalid CustomerPhone or Assignment does not exist.';
+    END
+END;

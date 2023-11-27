@@ -1,0 +1,49 @@
+from flask import Flask, request, jsonify
+import pyodbc
+
+app = Flask(__name__)
+
+server = 'project0478.database.windows.net'
+database = 'prj0404'
+username = 'sqladmin'
+password = 'Datasturdy123#'
+conn_str = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+
+def execute_add_ticket_procedure(customer_phone, product_name, product_description):
+    try:
+        with pyodbc.connect(conn_str, autocommit=True) as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("EXEC AddTicketForCustomer @CustomerPhone=?, @ProductName=?, @ProductDescription=?",
+                           customer_phone, product_name, product_description)
+
+            cursor.close()
+
+        return True
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+@app.route('/add_ticket', methods=['POST'])
+def add_ticket():
+    try:
+
+        data = request.get_json()
+        customer_phone = data.get('customer_phone')
+        product_name = data.get('product_name')
+        product_description = data.get('product_description')
+
+        success = execute_add_ticket_procedure(customer_phone, product_name, product_description)
+
+        if success:
+            return jsonify({'success': True, 'message': 'Ticket added successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Failed to add ticket'})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'success': False, 'message': 'Internal Server Error'})
+
+if __name__ == '__main__':
+    app.run(debug=True)

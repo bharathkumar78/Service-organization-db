@@ -1,0 +1,24 @@
+CREATE PROCEDURE AddAssignment
+    @TicketID INT,
+    @CustomerID INT,
+    @AgentID INT,
+    @Status VARCHAR(50) = 'Assigned'
+AS
+BEGIN
+    -- Start a transaction
+    BEGIN TRANSACTION;
+
+    -- Insert into Assignment table
+    INSERT INTO Assignment (TicketID, CustomerID, AgentID, Status)
+    VALUES (@TicketID, @CustomerID, @AgentID, @Status);
+
+    -- Update Ticket status to Assigned
+    UPDATE Ticket
+    SET Status = 'Assigned'
+    WHERE TicketID = @TicketID;
+
+    -- Commit the transaction
+    COMMIT;
+
+    PRINT 'Assignment successfully recorded.';
+END;

@@ -1,0 +1,53 @@
+from flask import Flask, request, jsonify
+import pyodbc
+
+app = Flask(__name__)
+
+server = 'project0478.database.windows.net'
+database = 'prj0404'
+username = 'sqladmin'
+password = 'Datasturdy123#'
+conn_str = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+
+def execute_add_assignment_procedure(ticket_id, customer_id, agent_id, status='Assigned'):
+    try:
+        with pyodbc.connect(conn_str, autocommit=True) as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("EXEC AddAssignment @TicketID=?, @CustomerID=?, @AgentID=?, @Status=?",
+                           ticket_id, customer_id, agent_id, status)
+
+            cursor.close()
+
+        return True
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+
+@app.route('/add_assignment', methods=['POST'])
+def add_assignment():
+    try:
+
+        data = request.get_json()
+        ticket_id = data.get('ticket_id')
+        customer_id = data.get('customer_id')
+        agent_id = data.get('agent_id')
+
+
+        success = execute_add_assignment_procedure(ticket_id, customer_id, agent_id)
+
+        if success:
+            return jsonify({'success': True, 'message': 'Assignment added successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Failed to add assignment'})
+
+    except Exception as e:
+        error_message = f"Error: {e}"
+        print(error_message)
+        return jsonify({'success': False, 'message': error_message})
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,0 +1,35 @@
+CREATE PROCEDURE AddCustomer
+    @CustomerName VARCHAR(255),
+    @CustomerPhone VARCHAR(15),
+    @Email VARCHAR(50),
+    @Address VARCHAR(255),
+    @Location VARCHAR(255)
+AS
+BEGIN
+    
+    DECLARE @CustomerID INT;
+
+    BEGIN TRANSACTION;
+
+    
+    IF NOT EXISTS (SELECT 1 FROM Customer WHERE CustomerPhone = @CustomerPhone)
+    BEGIN
+        INSERT INTO Customer (CustomerName, CustomerPhone, Email, Address, Location) 
+        VALUES (@CustomerName, @CustomerPhone, @Email, @Address, @Location);
+
+        SET @CustomerID = SCOPE_IDENTITY();
+    END
+    ELSE
+    BEGIN
+        UPDATE Customer
+        SET CustomerName = @CustomerName,
+            Email = @Email,
+            Address = @Address,
+            Location = @Location
+        WHERE CustomerPhone = @CustomerPhone;
+
+        SET @CustomerID = (SELECT CustomerID FROM Customer WHERE CustomerPhone = @CustomerPhone);
+    END;
+
+    COMMIT;
+END;

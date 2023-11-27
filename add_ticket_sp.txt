@@ -1,0 +1,33 @@
+
+create PROCEDURE AddTicketForCustomer
+    @CustomerPhone VARCHAR(15),
+    @ProductName VARCHAR(255),
+    @ProductDescription VARCHAR(MAX)
+AS
+BEGIN  
+    DECLARE @CustomerID INT;
+    DECLARE @TicketID INT;
+
+    BEGIN TRANSACTION;
+
+    -- Check if the customer exists
+    IF EXISTS (SELECT 1 FROM Customer WHERE CustomerPhone = @CustomerPhone)
+    BEGIN
+        -- If the customer exists, retrieve the CustomerID
+        SET @CustomerID = (SELECT CustomerID FROM Customer WHERE CustomerPhone = @CustomerPhone);
+    END
+    ELSE
+    BEGIN 
+        -- If the customer doesn't exist, throw an error to prompt the user for details
+        THROW 50000, 'Customer does not exist. Please provide customer details first.', 1;
+        RETURN;  -- Stop further execution if there's an error
+    END;
+    
+    -- Insert the ticket
+    INSERT INTO Ticket (CustomerID, CustomerPhone, ProductName, ProductDescription)
+    VALUES (@CustomerID, @CustomerPhone, @ProductName, @ProductDescription);
+
+    SET @TicketID = SCOPE_IDENTITY();
+    
+    COMMIT;
+END;

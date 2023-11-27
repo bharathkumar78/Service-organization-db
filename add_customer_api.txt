@@ -1,0 +1,52 @@
+from flask import Flask, request, jsonify
+import pyodbc
+
+app = Flask(__name__)
+
+server = 'project0478.database.windows.net'
+database = 'prj0404'
+username = 'sqladmin'
+password = 'Datasturdy123#'
+conn_str = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+
+def execute_add_customer_procedure(customer_name, customer_phone, email, address, location):
+    try:
+        
+        with pyodbc.connect(conn_str, autocommit=True) as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("EXEC AddCustomer @CustomerName=?, @CustomerPhone=?, @Email=?, @Address=?, @Location=?",
+                           customer_name, customer_phone, email, address, location)
+
+            cursor.close()
+
+        return True
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+@app.route('/add_customer', methods=['POST'])
+def add_customer():
+    try:
+        # Get customer data from the request body
+        data = request.get_json()
+        customer_name = data.get('customer_name')
+        customer_phone = data.get('customer_phone')
+        email = data.get('email')
+        address = data.get('address')
+        location = data.get('location')
+
+        success = execute_add_customer_procedure(customer_name, customer_phone, email, address, location)
+
+        if success:
+            return jsonify({'success': True, 'message': 'Customer added successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Failed to add customer'})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'success': False, 'message': 'Internal Server Error'})
+
+if __name__ == '__main__':
+    app.run(debug=True)

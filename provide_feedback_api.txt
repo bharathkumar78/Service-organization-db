@@ -1,0 +1,39 @@
+from flask import Flask, request, jsonify
+import pyodbc
+
+app = Flask(__name__)
+
+# Define your SQL Server connection parameters
+server = 'project0478.database.windows.net'
+database = 'prj0404'
+username = 'sqladmin'
+password = 'Datasturdy123#'
+conn_str = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+
+@app.route('/provide_feedback', methods=['POST'])
+def provide_feedback():
+    try:
+        # Connect to the database and create a cursor
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        # Get input data from the request
+        data = request.json
+        customer_phone = data['customer_phone']
+        rating = data['rating']
+
+        # Call the stored procedure
+        cursor.execute("EXEC ProvideFeedback ?, ?", customer_phone, rating)
+        conn.commit()
+
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+
+        return jsonify({'message': 'Feedback recorded successfully'}), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)

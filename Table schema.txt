@@ -1,0 +1,82 @@
+DROP DATABASE SAMPLE
+
+USE SAMPLE
+CREATE TABLE Organization (
+    OrganizationID INT PRIMARY KEY IDENTITY(1,1),
+    Name VARCHAR(255),
+    Address VARCHAR(255),
+    Phone VARCHAR(15),
+    Email VARCHAR(255)
+);
+ 
+CREATE TABLE Branch (
+    BranchID INT PRIMARY KEY IDENTITY(1,1),
+    BranchName VARCHAR(255),
+    Phone VARCHAR(15),
+    BranchLocation VARCHAR(255)
+);
+ 
+CREATE TABLE Product (
+    ProductID INT PRIMARY KEY IDENTITY(1,1),
+    ProductName VARCHAR(255)
+);
+ 
+CREATE TABLE ServiceAgent (
+    AgentID INT PRIMARY KEY IDENTITY(1,1),
+    AgentName VARCHAR(255),
+    Phone VARCHAR(15),
+    BranchID INT,
+    ProductID INT,
+    FOREIGN KEY (BranchID) REFERENCES Branch(BranchID),
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+ 
+CREATE TABLE Customer (
+    CustomerID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerName VARCHAR(255) NOT NULL,
+    CustomerPhone VARCHAR(15) UNIQUE,
+	Email VARCHAR(50) NOT NULL,
+    Address VARCHAR(255) NOT NULL,
+    Location VARCHAR(255) NOT NULL
+);
+ 
+CREATE TABLE Ticket (
+    TicketID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT,
+    CustomerPhone VARCHAR(15),
+    ProductName VARCHAR(255),
+    ProductDescription VARCHAR(MAX),
+    Status VARCHAR(50) DEFAULT 'Pending',
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);
+ 
+ 
+CREATE TABLE Assignment (
+    AssignmentID INT PRIMARY KEY IDENTITY(1,1),
+    TicketID INT,
+    CustomerID INT,
+    AgentID INT,
+    Status VARCHAR(50) DEFAULT 'Assigned',
+    FOREIGN KEY (TicketID) REFERENCES Ticket(TicketID),
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+    FOREIGN KEY (AgentID) REFERENCES ServiceAgent(AgentID)
+);
+ 
+CREATE TABLE Feedback (
+    FeedbackID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT,
+    AgentID INT,
+    Rating INT check (Rating>0 and Rating<=5),
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+    FOREIGN KEY (AgentID) REFERENCES ServiceAgent(AgentID)
+);
+
+
+select * from Organization
+select * from Branch
+select * from Product
+select * from ServiceAgent
+select * from Customer
+select * from Ticket
+select * from Assignment
+select * from Feedback
