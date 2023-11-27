@@ -64,6 +64,7 @@ CREATE TABLE Assignment (
  
 CREATE TABLE Feedback (
     FeedbackID INT PRIMARY KEY IDENTITY(1,1),
+    AssignmentID
     CustomerID INT,
     AgentID INT,
     Rating INT check (Rating>0 and Rating<=5),
